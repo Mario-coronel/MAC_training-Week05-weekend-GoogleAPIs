@@ -2,34 +2,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".view.geoCode.GeoCodeActivity">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Current location"
-        />
+        android:text="Current location" />
 
     <TextView
         android:id="@+id/tvLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/colorPrimary"
-        android:textSize="25sp"/>
+        android:textSize="25sp" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onButtonClicked"
-        android:text="Get address"/>
+        android:text="Get address" />
 
     <TextView
         android:id="@+id/tvAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/colorPrimary"
-        android:textSize="25sp"/>
+        android:textSize="25sp" />
+
+    <fragment
+        android:id="@+id/g_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="600dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/holo_red_light">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/placeslist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
+
+    </FrameLayout>
+
 </LinearLayout>

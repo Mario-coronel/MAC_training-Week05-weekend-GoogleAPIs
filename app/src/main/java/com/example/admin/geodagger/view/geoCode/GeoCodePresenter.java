@@ -1,12 +1,11 @@
 package com.example.admin.geodagger.view.geoCode;
 
 import android.location.Location;
-import android.support.annotation.MainThread;
-import android.widget.Toast;
 
 import com.example.admin.geodagger.manager.LocationManager;
 import com.example.admin.geodagger.model.datasource.RemoteDataSource;
 import com.example.admin.geodagger.model.response.GeoCodeResponse;
+import com.example.admin.geodagger.model.responsegeoplaces.PlacesResponse;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -62,6 +61,12 @@ public class GeoCodePresenter implements GeoCodeContract.Presenter, LocationMana
 
     }
 
+    // TODO: 7/3/2018 implementar este metodo 
+    private String getPlacesTypes() {
+        return "";
+    }
+
+
     @Override
     public void attachView(GeoCodeContract.View view) {
 
@@ -80,4 +85,37 @@ public class GeoCodePresenter implements GeoCodeContract.Presenter, LocationMana
         this.location = location;
         view.onLocationRecieved(location);
     }
+
+
+    public void getPlaces() {
+        RemoteDataSource.getPlaces(getFormattedLocation(), getPlacesTypes())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<PlacesResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(PlacesResponse placesResponse) {
+                        view.onPlacesReceived(placesResponse);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        System.out.println("ps error");
+                        view.showError(e.toString());
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+
 }

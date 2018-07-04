@@ -1,6 +1,7 @@
 package com.example.admin.geodagger.model.datasource;
 
 import com.example.admin.geodagger.model.response.GeoCodeResponse;
+import com.example.admin.geodagger.model.responsegeoplaces.PlacesResponse;
 
 import java.util.Observable;
 
@@ -13,7 +14,8 @@ import retrofit2.http.Query;
 public class RemoteDataSource {
 
     private static final String BASEURL = "https://maps.googleapis.com";
-    private static final String KEY = "AIzaSyBqHzNQSKdx2WkUbVLpfwTgRdtgEgiGlL8";
+    private static final String KEY = "AIzaSyCUcvDOTWDZxFs7ffAfACamWZ31ZHeMWPA";
+    private static int RADIUS = 750;
 
 
 
@@ -31,10 +33,20 @@ public static Retrofit createRetrofit() {
         return remoteService.getGeoCodeResponse(latlng, KEY);
     }
 
+    public static io.reactivex.Observable<PlacesResponse> getPlaces(String latlng, String type) {
+        RemoteService remoteService = createRetrofit().create(RemoteService.class);
+        return remoteService.getPlacesResponse(latlng,type,KEY,RADIUS);
+    }
+
 
 public interface RemoteService{
     @GET("/maps/api/geocode/json")
     io.reactivex.Observable<GeoCodeResponse> getGeoCodeResponse(@Query("latlng") String latlng, @Query("key") String key);
+
+    @GET("maps/api/place/nearbysearch/json")
+    io.reactivex.Observable<PlacesResponse> getPlacesResponse(@Query("location") String latlng, @Query("type") String type, @Query("key") String key, @Query("radius") int radius);
+
+
 }
 
 

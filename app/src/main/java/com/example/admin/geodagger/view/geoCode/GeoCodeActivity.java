@@ -3,28 +3,45 @@ package com.example.admin.geodagger.view.geoCode;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.location.Geocoder;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.admin.geodagger.R;
-import com.google.android.gms.common.internal.Objects;
+import com.example.admin.geodagger.adapters.PlaceListAdapter;
+import com.example.admin.geodagger.model.responsegeoplaces.PlacesResponse;
+import com.example.admin.geodagger.model.responsegeoplaces.Result;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContract.View {
+import java.util.ArrayList;
+import java.util.List;
+
+public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContract.View, OnMapReadyCallback {
 
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 2;
     public static final String TAG = GeoCodeActivity.class.getSimpleName() + "_TAG";
     GeoCodePresenter geoCodePresenter;
     TextView tvLocation, tvaddress;
+    GoogleMap map;
+    LatLng current;
+    RecyclerView placesView;
+    PlaceListAdapter placeListAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +51,11 @@ public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContrac
         geoCodePresenter.attachView(this);
         tvLocation = findViewById(R.id.tvLocation);
         tvaddress = findViewById(R.id.tvAddress);
+
+        //Maps part
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.g_map);
+        mapFragment.getMapAsync(this);
+
 
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -73,6 +95,7 @@ public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContrac
             // permissions this app might request
         }
     }
+
     public void showExplanation() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Explanation").setMessage("I need this permission").setNegativeButton("NOO!!!", new DialogInterface.OnClickListener() {
             @Override
@@ -95,8 +118,9 @@ public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContrac
     @Override
     public void onLocationRecieved(Location location) {
 
-        Toast.makeText(getApplicationContext(),location.toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), location.toString(), Toast.LENGTH_SHORT).show();
         tvLocation.setText(location.toString());
+        current = new LatLng(location.getLatitude(), location.getLongitude());
 
     }
 
@@ -107,12 +131,52 @@ public class GeoCodeActivity extends AppCompatActivity implements GeoCodeContrac
     }
 
     @Override
+    public void onPlacesReceived(PlacesResponse placesResponse) {
+        generatePlaceList(placesResponse.getResults());
+    }
+
+    private void generatePlaceList(List<Result> results) {
+        if (results != null) {
+            Toast.makeText(this, "ya tengo resultados", Toast.LENGTH_SHORT).show();
+        }
+
+        placesView = findViewById(R.id.placeslist);
+        placeListAdapter = new PlaceListAdapter(results);
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(GeoCodeActivity.this);
+        placesView.setLayoutManager(manager);
+        placesView.setAdapter(placeListAdapter);
+
+        addMarkers(results);
+    }
+
+    @Override
     public void showError(String error) {
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
     }
 
     public void onButtonClicked(View view) {
         geoCodePresenter.getAddress();
+        geoCodePresenter.getPlaces();
+
+    }
+
+    private void addMarkers(List<Result> results) {
+
+        for (Result r:
+             results) {
+
+            map.addMarker(new MarkerOptions().position(new LatLng(r.getGeometry().getLocation().getLat(), r.getGeometry().getLocation().getLng())).title(r.getName()));
+            
+        }
+        if (current != null) {
+            map.addMarker(new MarkerOptions().position(current).title("current location"));
+
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
 
     }
 }
